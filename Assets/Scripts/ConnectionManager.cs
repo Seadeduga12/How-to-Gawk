@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using TMPro;
+using System.Collections;
 
 public class ConnectionManager : MonoBehaviour
 {
@@ -12,43 +13,62 @@ public class ConnectionManager : MonoBehaviour
 
     private void Start()
     {
-        // Nonaktifkan status text saat pertama kali
         statusText.gameObject.SetActive(false);
-
-        // Tambahkan listener untuk tombol
-        hostButton.onClick.AddListener(StartHost);
-        joinButton.onClick.AddListener(StartClient);
+        hostButton.onClick.AddListener(OnHostButtonClicked);
+        joinButton.onClick.AddListener(OnJoinButtonClicked);
     }
 
-    public void StartHost()
+    private void OnHostButtonClicked()
     {
-        // Aktifkan status text dan set pesan menjadi "Hosting game..."
+        StartCoroutine(LoadSceneAndStartHost());
+    }
+
+    private void OnJoinButtonClicked()
+    {
+        StartCoroutine(LoadSceneAndStartClient());
+    }
+
+    private IEnumerator LoadSceneAndStartHost()
+    {
+        // Menampilkan status teks
         statusText.gameObject.SetActive(true);
         statusText.text = "Hosting game...";
 
-        // Mulai Host
-        NetworkManager.Singleton.StartHost();
+        // Memulai pemuatan scene secara asinkron
+        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync("GameScene", LoadSceneMode.Single);
 
-        // Pindahkan ke GameScene setelah berhasil
-        LoadGameScene();
+        // Menunggu sampai scene selesai dimuat
+        while (!asyncLoad.isDone)
+        {
+            yield return null; // Menunggu frame berikutnya
+        }
+
+        // Memastikan scene yang dimuat adalah "GameScene"
+        if (SceneManager.GetActiveScene().name == "GameScene")
+        {
+            NetworkManager.Singleton.StartHost();
+        }
     }
 
-    public void StartClient()
+    private IEnumerator LoadSceneAndStartClient()
     {
-        // Aktifkan status text dan set pesan menjadi "Joining game..."
+        // Menampilkan status teks
         statusText.gameObject.SetActive(true);
         statusText.text = "Joining game...";
 
-        // Mulai Client
-        NetworkManager.Singleton.StartClient();
+        // Memulai pemuatan scene secara asinkron
+        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync("GameScene", LoadSceneMode.Single);
 
-        // Pindahkan ke GameScene setelah berhasil
-        LoadGameScene();
-    }
+        // Menunggu sampai scene selesai dimuat
+        while (!asyncLoad.isDone)
+        {
+            yield return null; // Menunggu frame berikutnya
+        }
 
-    private void LoadGameScene()
-    {
-        // Pindah ke scene utama untuk gameplay setelah koneksi berhasil
-        SceneManager.LoadScene("GameScene"); // Pastikan nama scene benar
+        // Memastikan scene yang dimuat adalah "GameScene"
+        if (SceneManager.GetActiveScene().name == "GameScene")
+        {
+            NetworkManager.Singleton.StartClient();
+        }
     }
 }
