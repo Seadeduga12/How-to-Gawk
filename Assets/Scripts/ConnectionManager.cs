@@ -18,24 +18,24 @@ public class ConnectionManager : MonoBehaviour
         joinButton.onClick.AddListener(OnJoinButtonClicked);
     }
 
-    private void OnHostButtonClicked()
+    public void OnHostButtonClicked()
     {
-        StartCoroutine(LoadSceneAndStartHost());
-    }
-
-    private void OnJoinButtonClicked()
-    {
-        StartCoroutine(LoadSceneAndStartClient());
-    }
-
-    private IEnumerator LoadSceneAndStartHost()
-    {
-        // Menampilkan status teks
         statusText.gameObject.SetActive(true);
         statusText.text = "Hosting game...";
+        StartCoroutine(LoadSceneAndStartNetwork("GameScene", true));
+    }
 
+    public void OnJoinButtonClicked()
+    {
+        statusText.gameObject.SetActive(true);
+        statusText.text = "Joining game...";
+        StartCoroutine(LoadSceneAndStartNetwork("GameScene", false));
+    }
+
+    private IEnumerator LoadSceneAndStartNetwork(string sceneName, bool isHost)
+    {
         // Memulai pemuatan scene secara asinkron
-        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync("GameScene", LoadSceneMode.Single);
+        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Single);
 
         // Menunggu sampai scene selesai dimuat
         while (!asyncLoad.isDone)
@@ -43,32 +43,30 @@ public class ConnectionManager : MonoBehaviour
             yield return null; // Menunggu frame berikutnya
         }
 
-        // Memastikan scene yang dimuat adalah "GameScene"
-        if (SceneManager.GetActiveScene().name == "GameScene")
+        // Memastikan scene yang dimuat adalah GameScene
+        if (SceneManager.GetActiveScene().name == sceneName)
         {
-            NetworkManager.Singleton.StartHost();
+            if (isHost)
+            {
+                NetworkManager.Singleton.StartHost();
+                SpawnPlayer();
+            }
+            else
+            {
+                NetworkManager.Singleton.StartClient();
+                SpawnPlayer();
+            }
         }
     }
 
-    private IEnumerator LoadSceneAndStartClient()
+    private void SpawnPlayer()
     {
-        // Menampilkan status teks
-        statusText.gameObject.SetActive(true);
-        statusText.text = "Joining game...";
-
-        // Memulai pemuatan scene secara asinkron
-        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync("GameScene", LoadSceneMode.Single);
-
-        // Menunggu sampai scene selesai dimuat
-        while (!asyncLoad.isDone)
+        // Pastikan bahwa player prefab telah didaftarkan dalam NetworkManager dan memiliki NetworkObject
+        if (NetworkManager.Singleton.IsHost || NetworkManager.Singleton.IsClient)
         {
-            yield return null; // Menunggu frame berikutnya
-        }
-
-        // Memastikan scene yang dimuat adalah "GameScene"
-        if (SceneManager.GetActiveScene().name == "GameScene")
-        {
-            NetworkManager.Singleton.StartClient();
+            Debug.Log("Spawning player...");
+            NetworkManager.Singleton.ConnectedClients[NetworkManager.Singleton.LocalClientId]
+                .PlayerObject.GetComponent<NetworkObject>().Spawn();
         }
     }
 }
