@@ -8,17 +8,24 @@ public class BallController : NetworkBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        if (rb == null)
+        {
+            Debug.LogError("Rigidbody2D not found on Ball prefab!");
+        }
     }
 
     public override void OnNetworkSpawn()
     {
-        if (IsServer)
+        if (rb != null)
         {
-            rb.bodyType = RigidbodyType2D.Dynamic;
-        }
-        else
-        {
-            rb.bodyType = RigidbodyType2D.Kinematic;
+            if (IsServer)
+            {
+                rb.bodyType = RigidbodyType2D.Dynamic; // Server menetapkan Rigidbody menjadi dynamic
+            }
+            else
+            {
+                rb.bodyType = RigidbodyType2D.Kinematic; // Klien tidak memanipulasi fisika bola
+            }
         }
     }
 }

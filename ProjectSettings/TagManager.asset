@@ -7,6 +7,7 @@ TagManager:
   - Player1
   - Player2
   - Ball
+  - Ground
   layers:
   - Default
   - TransparentFX
@@ -46,4 +47,10 @@ TagManager:
     locked: 0
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Goal
+    uniqueID: 2373388341
+    locked: 0
+  - name: Player and Ball
+    uniqueID: 2843698047
     locked: 0
