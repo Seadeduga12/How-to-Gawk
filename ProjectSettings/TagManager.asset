@@ -8,6 +8,8 @@ TagManager:
   - Player2
   - Ball
   - Ground
+  - LeftGoal
+  - RightGoal
   layers:
   - Default
   - TransparentFX
