@@ -6,6 +6,7 @@ public class PlayerController : NetworkBehaviour
     public float moveSpeed = 10f;
     public float jumpForce = 10f;
     public float kickForce = 10f;
+    public float kickUpwardForce = 5f; // Gaya ke atas tambahan untuk melambungkan bola
     public GameObject ballPrefab;
     private GameObject ball;
     private Rigidbody2D ballRb;
@@ -82,14 +83,11 @@ public class PlayerController : NetworkBehaviour
     {
         if (ballRb != null && ball != null)
         {
-            // Arahkan tendangan dari pemain ke bola
-            Vector3 kickDirection = (ball.transform.position - transform.position).normalized;
+            Vector3 kickDirection = (ball.transform.position - transform.position).normalized + Vector3.up * 0.5f;
 
-            // Terapkan gaya ke bola
-            ballRb.AddForce(kickDirection * kickForce, ForceMode2D.Impulse);
+            ballRb.AddForce(new Vector2(kickDirection.x * kickForce, kickUpwardForce), ForceMode2D.Impulse);
 
-            // Debugging untuk memastikan KickBall dipanggil
-            Debug.Log("Ball kicked with force: " + (kickDirection * kickForce));
+            Debug.Log("Ball kicked with upward force: " + (kickDirection * kickForce));
         }
         else
         {
